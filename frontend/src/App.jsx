@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import {
   ArrowRight,
