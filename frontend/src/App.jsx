@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Music2,
   Palette,
+  Plus,
   Search,
   Sparkles,
   Users,
@@ -44,6 +45,7 @@ function App() {
   const [selectedSkill, setSelectedSkill] = useState(seedSkills[0]);
   const [saved, setSaved] = useState(new Set());
   const [showRequest, setShowRequest] = useState(false);
+  const [showCreateSkill, setShowCreateSkill] = useState(false);
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
@@ -85,6 +87,37 @@ function App() {
     }).catch(() => {});
   }
 
+  function createSkill(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const category = form.category.value;
+    const skill = {
+      id: `local-${Date.now()}`,
+      title: form.title.value,
+      category,
+      description: form.description.value,
+      owner: "Alex K.",
+      initials: "AK",
+      location: form.location.value,
+      distance: "0.0 mi",
+      rating: "New",
+      reviews: 0,
+      wants: form.wants.value,
+      accent: { Technology: "blue", Languages: "coral", Creative: "violet", "Food & Home": "green", Music: "gold" }[category] || "peach"
+    };
+    fetch("http://localhost:5000/api/skills", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(skill)
+    }).catch(() => {});
+    setSkills((current) => [skill, ...current]);
+    setSelectedSkill(skill);
+    setActiveCategory("All skills");
+    setShowCreateSkill(false);
+    setNotice("Your skill is now live in the community");
+    window.setTimeout(() => setNotice(""), 4200);
+  }
+
   return (
     <BrowserRouter>
       <div className="app-shell">
@@ -95,7 +128,7 @@ function App() {
         </header>
 
         <main id="discover" className="main-content">
-          <section className="welcome-row"><div><p className="eyebrow">Tuesday, September 11</p><h1>Find your next <em>exchange.</em></h1><p className="lede">Share what you know. Learn what you need. Keep it local.</p></div><button className="primary-button" onClick={() => setNotice("Your offer editor is coming next")}>Share a skill <ArrowRight size={17} /></button></section>
+          <section className="welcome-row"><div><p className="eyebrow">Tuesday, September 11</p><h1>Find your next <em>exchange.</em></h1><p className="lede">Share what you know. Learn what you need. Keep it local.</p></div><button className="primary-button" onClick={() => setShowCreateSkill(true)}><Plus size={17} /> Share a skill</button></section>
 
           <section className="stats-strip"><div><span className="stat-number">248</span><span className="stat-label">active skills nearby</span></div><div className="stat-divider" /><div><span className="stat-number">1,204</span><span className="stat-label">hours exchanged</span></div><div className="stat-divider" /><div><span className="stat-number">4.9</span><span className="stat-label">average community rating</span></div><div className="stats-spacer" /><span className="live-indicator"><span /> Community is active</span></section>
 
@@ -109,6 +142,7 @@ function App() {
         </main>
         {notice && <div className="toast"><Check size={17} /> {notice}</div>}
         {showRequest && <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setShowRequest(false)}><form className="request-modal" onSubmit={requestExchange}><button type="button" className="modal-close" onClick={() => setShowRequest(false)} aria-label="Close"><X size={18} /></button><span className="modal-kicker">Start an exchange</span><h2>Send a note to {selectedSkill.owner.split(" ")[0]}</h2><p>Tell them what you would like to learn and what you can offer in return.</p><textarea name="message" required placeholder={`Hi ${selectedSkill.owner.split(" ")[0]}, I would love to learn ${selectedSkill.title.toLowerCase()}...`} /><button className="request-button" type="submit">Send exchange request <ArrowRight size={17} /></button></form></div>}
+        {showCreateSkill && <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setShowCreateSkill(false)}><form className="request-modal create-modal" onSubmit={createSkill}><button type="button" className="modal-close" onClick={() => setShowCreateSkill(false)} aria-label="Close"><X size={18} /></button><span className="modal-kicker">Give something back</span><h2>Share a skill with your neighbors</h2><p>Describe what you can teach and what would make a good exchange for you.</p><label>Skill title<input name="title" required maxLength="60" placeholder="e.g. Intro to sourdough baking" /></label><div className="form-row"><label>Category<select name="category" defaultValue="Technology">{categories.slice(1).map((category) => <option key={category}>{category}</option>)}</select></label><label>Neighborhood<input name="location" required placeholder="e.g. North Park" /></label></div><label>What can you teach?<textarea name="description" required maxLength="180" placeholder="What will someone learn from you?" /></label><label>What would you like in return?<input name="wants" required maxLength="60" placeholder="e.g. Conversational Spanish" /></label><button className="request-button" type="submit">Publish my skill <ArrowRight size={17} /></button></form></div>}
       </div>
     </BrowserRouter>
   );

@@ -34,6 +34,29 @@ app.get("/api/skills", (req, res) => {
   res.json({ success: true, skills: results });
 });
 
+app.post("/api/skills", (req, res) => {
+  const { title, category, description, location, wants } = req.body;
+  if (!title || !category || !description || !location || !wants) {
+    return res.status(400).json({ success: false, message: "All skill listing fields are required" });
+  }
+  const skill = {
+    id: `skill-${Date.now()}`,
+    title,
+    category,
+    description,
+    owner: "Alex K.",
+    initials: "AK",
+    location,
+    distance: "0.0 mi",
+    rating: "New",
+    reviews: 0,
+    wants,
+    accent: "peach"
+  };
+  skills.unshift(skill);
+  res.status(201).json({ success: true, skill });
+});
+
 app.post("/api/exchanges", (req, res) => {
   const skill = skills.find((item) => item.id === req.body.skillId);
   if (!skill || !req.body.message) {
